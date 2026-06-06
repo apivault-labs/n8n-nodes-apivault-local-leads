@@ -1,0 +1,55 @@
+{
+  "name": "n8n-nodes-apivault-local-leads",
+  "version": "0.1.0",
+  "description": "n8n community node for Local Lead Finder Pro — find local businesses by category + location and auto-enrich every lead: 0-100 lead score, website tech stack (Wix/WordPress/Shopify), real emails, phone E.164, mobile + SEO audit, brand age and a personalized outreach pitch. CSV export for HubSpot/Pipedrive. 30+ fields per lead. No login. Pay-as-you-go, no monthly fee.",
+  "license": "MIT",
+  "homepage": "https://apify.com/apivault_labs/local-business-lead-finder",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "local-leads",
+    "lead-generation",
+    "b2b-prospecting",
+    "yellowpages-scraper",
+    "local-seo",
+    "web-agency-leads",
+    "outreach-automation",
+    "crm-enrichment",
+    "apollo-alternative",
+    "apify"
+  ],
+  "author": {
+    "name": "apivault_labs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apivault-labs/n8n-nodes-apivault-local-leads.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && copyfiles \"nodes/**/*.svg\" dist",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/ApifyApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/LocalLeads/LocalLeads.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "copyfiles": "^2.4.1",
+    "n8n-workflow": "*",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
