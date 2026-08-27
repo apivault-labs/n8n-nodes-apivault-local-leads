@@ -8,21 +8,20 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
-// Apify actor that does the real work (runs server-side, billed pay-per-event).
-const ACTOR_ID = 'apivault_labs~local-business-lead-finder';
+const ACTOR_ID = 'apivault_labs~apify-actor-local-leads';
 
 export class LocalLeads implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Local Lead Finder Pro',
+		displayName: 'Local Lead Finder',
 		name: 'localLeads',
 		icon: 'file:localleads.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["category"] + " — " + $parameter["location"]}}',
+		subtitle: '={{$parameter["inputMode"] === "urls" ? "Enrich websites" : $parameter["category"] + " — " + $parameter["location"]}}',
 		description:
-			'Find local businesses by category + location and auto-enrich every lead: lead score, website tech stack, real emails, phone E.164, mobile + SEO audit, brand age and an outreach pitch.',
+			'Find local businesses or enrich website lists with contacts, lead scores, website insights and outreach data.',
 		defaults: {
-			name: 'Local Lead Finder Pro',
+			name: 'Local Lead Finder',
 		},
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
@@ -35,23 +34,45 @@ export class LocalLeads implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Input Mode',
+				name: 'inputMode',
+				type: 'options',
+				options: [
+					{ name: 'Search by Category and Location', value: 'search' },
+					{ name: 'Enrich Website URLs', value: 'urls' },
+					{ name: 'Search and Enrich Website URLs', value: 'both' },
+				],
+				default: 'search',
+				description: 'Choose whether to discover businesses, enrich a supplied website list, or do both',
+			},
+			{
 				displayName: 'Business Category',
 				name: 'category',
 				type: 'string',
 				default: '',
-				required: true,
 				placeholder: 'plumbers',
 				description:
 					'Type of business to search for. Examples: plumbers, restaurants, dentists, auto-repair, lawyers, hair-salons.',
+				displayOptions: { show: { inputMode: ['search', 'both'] } },
 			},
 			{
 				displayName: 'Location',
 				name: 'location',
 				type: 'string',
 				default: '',
-				required: true,
 				placeholder: 'New York NY',
 				description: "City and state. Examples: 'New York NY', 'Los Angeles CA', 'Miami FL'.",
+				displayOptions: { show: { inputMode: ['search', 'both'] } },
+			},
+			{
+				displayName: 'Website URLs',
+				name: 'startUrls',
+				type: 'string',
+				typeOptions: { rows: 5 },
+				default: '',
+				placeholder: 'https://example.com\nexample.org',
+				description: 'One website URL or domain per line. Commas are also accepted.',
+				displayOptions: { show: { inputMode: ['urls', 'both'] } },
 			},
 			{
 				displayName: 'Pages to Scrape',
@@ -60,6 +81,7 @@ export class LocalLeads implements INodeType {
 				typeOptions: { minValue: 1, maxValue: 10 },
 				default: 1,
 				description: 'Number of result pages to scrape (each page ~30 businesses)',
+				displayOptions: { show: { inputMode: ['search', 'both'] } },
 			},
 			{
 				displayName: 'Only Without Website',
@@ -68,6 +90,7 @@ export class LocalLeads implements INodeType {
 				default: false,
 				description:
 					'Whether to return only businesses that do not have a website (the hottest leads for web agencies)',
+				displayOptions: { show: { inputMode: ['search', 'both'] } },
 			},
 			{
 				displayName: 'Export Format',
@@ -88,6 +111,27 @@ export class LocalLeads implements INodeType {
 				placeholder: 'Add Enrichment Option',
 				default: {},
 				options: [
+					{
+						displayName: 'Crawl Contact and About Pages',
+						name: 'crawlSubpages',
+						type: 'boolean',
+						default: true,
+						description: 'Whether to inspect relevant subpages when the homepage has no contact details',
+					},
+					{
+						displayName: 'Verify Email Deliverability',
+						name: 'verifyEmails',
+						type: 'boolean',
+						default: true,
+						description: 'Whether to score discovered emails for deliverability and select the best contact',
+					},
+					{
+						displayName: 'Extract Owner or Decision-Maker Name',
+						name: 'extractOwnerName',
+						type: 'boolean',
+						default: true,
+						description: 'Whether to look for a public owner, founder, or principal name',
+					},
 					{
 						displayName: 'Check Websites (Alive + Tech Stack + Emails + Phones)',
 						name: 'enrichWebsites',
@@ -207,8 +251,10 @@ export class LocalLeads implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const category = this.getNodeParameter('category', i) as string;
-				const location = this.getNodeParameter('location', i) as string;
+				const inputMode = this.getNodeParameter('inputMode', i, 'search') as string;
+				const category = this.getNodeParameter('category', i, '') as string;
+				const location = this.getNodeParameter('location', i, '') as string;
+				const startUrlsText = this.getNodeParameter('startUrls', i, '') as string;
 				const pages = this.getNodeParameter('pages', i, 1) as number;
 				const onlyWithoutWebsite = this.getNodeParameter(
 					'onlyWithoutWebsite',
@@ -223,6 +269,9 @@ export class LocalLeads implements INodeType {
 					includeOutreachPitch?: boolean;
 					enrichBrandAge?: boolean;
 					enrichGeocode?: boolean;
+					crawlSubpages?: boolean;
+					verifyEmails?: boolean;
+					extractOwnerName?: boolean;
 				};
 				const filters = this.getNodeParameter('filters', i, {}) as {
 					excludeChains?: boolean;
@@ -234,20 +283,33 @@ export class LocalLeads implements INodeType {
 					timeout?: number;
 				};
 
-				if (!category || !category.trim()) {
+				const usesSearch = inputMode === 'search' || inputMode === 'both';
+				const usesUrls = inputMode === 'urls' || inputMode === 'both';
+				const startUrls = startUrlsText
+					.split(/[\n,]+/)
+					.map((url) => url.trim())
+					.filter(Boolean);
+
+				if (usesSearch && (!category || !category.trim())) {
 					throw new NodeOperationError(this.getNode(), 'Business Category is required', {
 						itemIndex: i,
 					});
 				}
-				if (!location || !location.trim()) {
+				if (usesSearch && (!location || !location.trim())) {
 					throw new NodeOperationError(this.getNode(), 'Location is required', {
+						itemIndex: i,
+					});
+				}
+				if (usesUrls && startUrls.length === 0) {
+					throw new NodeOperationError(this.getNode(), 'At least one Website URL is required', {
 						itemIndex: i,
 					});
 				}
 
 				const body: Record<string, unknown> = {
-					category: category.trim(),
-					location: location.trim(),
+					category: usesSearch ? category.trim() : '',
+					location: usesSearch ? location.trim() : '',
+					startUrls: usesUrls ? startUrls : [],
 					pages,
 					onlyWithoutWebsite,
 					exportFormat,
@@ -257,6 +319,9 @@ export class LocalLeads implements INodeType {
 					includeOutreachPitch: enrichment.includeOutreachPitch ?? true,
 					enrichBrandAge: enrichment.enrichBrandAge ?? true,
 					enrichGeocode: enrichment.enrichGeocode ?? false,
+					crawlSubpages: enrichment.crawlSubpages ?? true,
+					verifyEmails: enrichment.verifyEmails ?? true,
+					extractOwnerName: enrichment.extractOwnerName ?? true,
 					excludeChains: filters.excludeChains ?? false,
 					minLeadScore: filters.minLeadScore ?? 0,
 					maxResults: filters.maxResults ?? 0,
