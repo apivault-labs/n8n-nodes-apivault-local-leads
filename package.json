@@ -1,9 +1,9 @@
 {
   "name": "n8n-nodes-apivault-local-leads",
-  "version": "0.1.0",
-  "description": "n8n community node for Local Lead Finder Pro — find local businesses by category + location and auto-enrich every lead: 0-100 lead score, website tech stack (Wix/WordPress/Shopify), real emails, phone E.164, mobile + SEO audit, brand age and a personalized outreach pitch. CSV export for HubSpot/Pipedrive. 30+ fields per lead. No login. Pay-as-you-go, no monthly fee.",
+  "version": "0.1.2",
+  "description": "Official n8n community node for Apivault Labs Local Lead Finder. Find local businesses or enrich your own website list with contact data, lead scores, website insights and CRM-ready output through Apify.",
   "license": "MIT",
-  "homepage": "https://apify.com/apivault_labs/local-business-lead-finder",
+  "homepage": "https://apify.com/apivault_labs/apify-actor-local-leads",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
