@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2
+
+- Point the node to the current `apivault_labs/apify-actor-local-leads` Actor.
+- Add direct website/domain enrichment and combined search + URL modes.
+- Add controls for contact/about-page crawling, email deliverability scoring, and owner-name extraction.
+- Keep existing search workflows backward compatible through the default `search` mode.
+- Refresh package metadata and Apify links.
+
 ## 0.1.0
 
 - Initial release.
@@ -13,5 +21,5 @@
   max results).
 - Export formats: default JSON / CSV (HubSpot/Pipedrive) / both.
 - `Apify API` credentials with token test against `/users/me`.
-- Calls the `apivault_labs/local-business-lead-finder` actor via
+- Calls the `apivault_labs/apify-actor-local-leads` actor via
   `run-sync-get-dataset-items`.
