@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/apivault-labs/n8n-nodes-apivault-local-leads.git"
+    "url": "git+https://github.com/apivault-labs/n8n-nodes-apivault-local-leads.git"
   },
   "main": "index.js",
   "scripts": {
