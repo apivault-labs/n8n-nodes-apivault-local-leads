@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Added a ready-to-import local lead qualification workflow.
+- Simplified setup by keeping infrastructure settings managed by the Actor.
+
 ## 0.1.2
 
 - Point the node to the current `apivault_labs/apify-actor-local-leads` Actor.
