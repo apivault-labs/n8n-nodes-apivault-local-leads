@@ -1,0 +1,108 @@
+{
+  "id": "50f7d4b8-ee44-5df7-adf5-c34a38b82ecc",
+  "name": "Local Leads → Qualified CRM rows",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "3bc08847-1591-50a3-9065-1356f35b1916",
+      "name": "When clicking Execute workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup\n1. Select your Apify API credential.\n2. Choose a business category and location.\n3. Adjust the lead-quality filters and result cap.\n4. Connect the normalized output to your CRM or review queue.",
+        "height": 300,
+        "width": 460
+      },
+      "id": "f5a11a84-1af5-5e55-95ad-393737476ab8",
+      "name": "How to use this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "inputMode": "search",
+        "category": "plumber",
+        "location": "Austin, Texas",
+        "startUrls": "",
+        "pages": 1,
+        "onlyWithoutWebsite": false,
+        "exportFormat": "csv",
+        "enrichment": {
+          "enrichWebsites": true,
+          "crawlSubpages": true,
+          "verifyEmails": true,
+          "extractOwnerName": true,
+          "includeOutreachPitch": true
+        },
+        "filters": {
+          "excludeChains": true,
+          "minLeadScore": 30,
+          "maxResults": 100
+        }
+      },
+      "id": "c717405e-187e-5982-8fe4-9a46d87f5005",
+      "name": "Find local businesses with Apify",
+      "type": "n8n-nodes-apivault-local-leads.localLeads",
+      "typeVersion": 1,
+      "position": [
+        260,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const j = $json; const email = j.email ?? j.primaryEmail ?? (Array.isArray(j.emails) ? j.emails[0] : ''); const phone = j.phone ?? j.telephone ?? (Array.isArray(j.phones) ? j.phones[0] : ''); return { json: { ...j, crmLead: { businessName: j.businessName ?? j.name ?? '', website: j.website ?? j.url ?? '', email, phone, location: j.address ?? j.location ?? '', leadScore: Number(j.leadScore ?? 0), reviewStatus: email || phone ? 'ready_for_review' : 'needs_contact' } } };"
+      },
+      "id": "5ccb8174-8af1-596b-8f73-2b5170ddaad0",
+      "name": "Prepare qualified lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        580,
+        120
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking Execute workflow": {
+      "main": [
+        [
+          {
+            "node": "Find local businesses with Apify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find local businesses with Apify": {
+      "main": [
+        [
+          {
+            "node": "Prepare qualified lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "debe116f-de0f-5426-9256-79bc88ae544f",
+  "tags": []
+}
