@@ -217,31 +217,6 @@ export class LocalLeads implements INodeType {
 					},
 				],
 			},
-			{
-				displayName: 'Advanced Options',
-				name: 'advancedOptions',
-				type: 'collection',
-				placeholder: 'Add Option',
-				default: {},
-				options: [
-					{
-						displayName: 'Max Concurrency',
-						name: 'maxConcurrency',
-						type: 'number',
-						typeOptions: { minValue: 1, maxValue: 5 },
-						default: 3,
-						description: 'Number of YellowPages pages to scrape in parallel',
-					},
-					{
-						displayName: 'Timeout per Page (Seconds)',
-						name: 'timeout',
-						type: 'number',
-						typeOptions: { minValue: 30, maxValue: 300 },
-						default: 120,
-						description: 'Maximum time to wait for each YellowPages page',
-					},
-				],
-			},
 		],
 	};
 
@@ -278,11 +253,6 @@ export class LocalLeads implements INodeType {
 					minLeadScore?: number;
 					maxResults?: number;
 				};
-				const advanced = this.getNodeParameter('advancedOptions', i, {}) as {
-					maxConcurrency?: number;
-					timeout?: number;
-				};
-
 				const usesSearch = inputMode === 'search' || inputMode === 'both';
 				const usesUrls = inputMode === 'urls' || inputMode === 'both';
 				const startUrls = startUrlsText
@@ -325,8 +295,6 @@ export class LocalLeads implements INodeType {
 					excludeChains: filters.excludeChains ?? false,
 					minLeadScore: filters.minLeadScore ?? 0,
 					maxResults: filters.maxResults ?? 0,
-					maxConcurrency: advanced.maxConcurrency ?? 3,
-					timeout: advanced.timeout ?? 120,
 				};
 
 				const options: IRequestOptions = {
