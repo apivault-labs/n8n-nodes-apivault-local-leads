@@ -79,6 +79,13 @@ Billed per lead through Apify (pay-per-event): **$4 / 1,000 leads** ($0.004 each
 
 [MIT](LICENSE)
 
+## Ready-to-import workflow
+
+The package includes `examples/quickstart-workflow.json`: a category-and-location
+search followed by normalized CRM-ready output. Import it into n8n, select your
+Apify credential and adjust the business filters. The workflow is inactive by
+default and contains no credentials.
+
 ## Keywords
 
 `local-leads` `lead-generation` `b2b-prospecting` `yellowpages-scraper` `local-seo` `web-agency-leads` `outreach-automation` `crm-enrichment` `apollo-alternative` `n8n` `apify`
