@@ -89,3 +89,15 @@ default and contains no credentials.
 ## Keywords
 
 `local-leads` `lead-generation` `b2b-prospecting` `yellowpages-scraper` `local-seo` `web-agency-leads` `outreach-automation` `crm-enrichment` `apollo-alternative` `n8n` `apify`
+
+<!-- apivault-integrations:start -->
+## Hosted Actor and integrations
+
+- [Run Local Lead Finder — Business Emails & Phones API on Apify](https://apify.com/apivault_labs/apify-actor-local-leads).
+- [Current pricing and usage terms](https://apify.com/apivault_labs/apify-actor-local-leads/pricing).
+- [n8n community package: n8n-nodes-apivault-local-leads](https://www.npmjs.com/package/n8n-nodes-apivault-local-leads).
+- [Python client](https://github.com/apivault-labs/local-leads-python).
+- [n8n source and usage](https://github.com/apivault-labs/apivault-labs/tree/main/community-nodes/n8n-nodes-apivault-local-leads).
+
+An Apify account and API token are required. Hosted Actor/platform charges apply. npm publication is not n8n verification or confirmation of n8n Cloud availability.
+<!-- apivault-integrations:end -->
